@@ -73,25 +73,13 @@ CREATE TABLE InformacoesCartao (
     idInformacoesCartao INT PRIMARY KEY AUTO_INCREMENT,
     Tipo VARCHAR(45) NOT NULL,
     Limite DECIMAL(10,2) NOT NULL,
-    Validade DATE NOT NULL
+    Validade DATE NOT NULL,
+    PessoaFisica_idPessoaFisica INT,
+    PessoaJuridica_idPessoaJuridica INT,
+    FOREIGN KEY (PessoaFisica_idPessoaFisica) REFERENCES PessoaFisica(idPessoaFisica),
+    FOREIGN KEY (PessoaJuridica_idPessoaJuridica) REFERENCES PessoaJuridica(idPessoaJuridica)
 );
 ALTER TABLE InformacoesCartao auto_increment=1;
-
-CREATE TABLE PessoaFisica_has_InformacoesCartao (
-    PessoaFisica_idPessoaFisica INT,
-    InformacoesCartao_idInformacoesCartao INT,
-    PRIMARY KEY (PessoaFisica_idPessoaFisica, InformacoesCartao_idInformacoesCartao),
-    FOREIGN KEY (PessoaFisica_idPessoaFisica) REFERENCES PessoaFisica(idPessoaFisica) ON DELETE CASCADE,
-    FOREIGN KEY (InformacoesCartao_idInformacoesCartao) REFERENCES InformacoesCartao(idInformacoesCartao) ON DELETE CASCADE
-);
-
-CREATE TABLE PessoaJuridica_has_InformacoesCartao (
-    PessoaJuridica_idPessoaJuridica INT,
-    InformacoesCartao_idInformacoesCartao INT,
-    PRIMARY KEY (PessoaJuridica_idPessoaJuridica, InformacoesCartao_idInformacoesCartao),
-    FOREIGN KEY (PessoaJuridica_idPessoaJuridica) REFERENCES PessoaJuridica(idPessoaJuridica) ON DELETE CASCADE,
-    FOREIGN KEY (InformacoesCartao_idInformacoesCartao) REFERENCES InformacoesCartao(idInformacoesCartao) ON DELETE CASCADE
-);
 
 CREATE TABLE Fornecedor (
     idFornecedor INT PRIMARY KEY AUTO_INCREMENT,
@@ -205,20 +193,14 @@ INSERT INTO FormaPagamento (TipoPagamento, Detalhe, Pedido_idPedido) VALUES
 ('PIX', 'Chave CPF', 5);
 
 -- Inserindo dados na tabela InformacoesCartao
-INSERT INTO InformacoesCartao (Tipo, Limite, Validade) VALUES
-('Crédito', 5000.00, '2026-12-01'),
-('Débito', 2000.00, '2025-08-15'),
-('Crédito', 7000.00, '2027-05-10'),
-('Débito', 1000.00, '2024-11-30'),
-('Crédito', 3000.00, '2025-07-20');
+INSERT INTO InformacoesCartao (Tipo, Limite, Validade, PessoaFisica_idPessoaFisica, PessoaJuridica_idPessoaJuridica) VALUES
+('Crédito', 5000.00, '2026-12-01', 1, null),
+('Débito', 2000.00, '2025-08-15', null, 2),
+('Crédito', 7000.00, '2027-05-10', 2, null),
+('Débito', 1000.00, '2024-11-30', null, 1),
+('Crédito', 3000.00, '2025-07-20', 3, null);
 
--- Relacionando PessoaFisica com InformacoesCartao
-INSERT INTO PessoaFisica_has_InformacoesCartao (PessoaFisica_idPessoaFisica, InformacoesCartao_idInformacoesCartao) VALUES
-(1, 1), (3, 2), (3, 3);
 
--- Relacionando PessoaJuridica com InformacoesCartao
-INSERT INTO PessoaJuridica_has_InformacoesCartao (PessoaJuridica_idPessoaJuridica, InformacoesCartao_idInformacoesCartao) VALUES
-(2, 3), (1, 5);
 
 -- Inserindo dados na tabela Fornecedor
 INSERT INTO Fornecedor (RazaoSocial, CNPJ) VALUES
