@@ -152,3 +152,46 @@ insert into works_on values (123456789, 1, 32.5),
                             (987654321, 20, 15.0),
                             (888665555, 20, 0.0);
 
+
+CREATE VIEW vw_empregados_por_departamento AS
+SELECT d.Dname AS departamento, dl.Dlocation AS localizacao, COUNT(e.Ssn) AS num_empregados
+FROM employee e
+JOIN departament d ON e.Dno = d.Dnumber
+JOIN dept_locations dl ON d.Dnumber = dl.Dnumber
+GROUP BY d.Dname, dl.Dlocation;
+
+CREATE VIEW vw_departamentos_gerentes AS
+SELECT d.Dname AS departamento, e.Fname AS gerente
+FROM departament d
+LEFT JOIN employee e ON d.Mgr_ssn = e.Ssn;
+
+CREATE VIEW vw_projetos_mais_empregados AS
+SELECT p.Pname AS projeto, COUNT(w.Essn) AS num_empregados
+FROM project p
+JOIN works_on w ON p.Pnumber = w.Pno
+GROUP BY p.Pname
+ORDER BY num_empregados DESC;
+
+CREATE VIEW vw_projetos_departamentos_gerentes AS
+SELECT p.Pname AS projeto, d.Dname AS departamento, e.Fname AS gerente
+FROM project p
+JOIN departament d ON p.Dnum = d.Dnumber
+LEFT JOIN employee e ON d.Mgr_ssn = e.Ssn;
+
+CREATE VIEW vw_empregados_dependentes_gerentes AS
+SELECT e.Fname AS empregado, 
+       CASE WHEN d.Essn IS NOT NULL THEN 'Sim' ELSE 'Não' END AS possui_dependentes,
+       CASE WHEN e.Ssn IN (SELECT Mgr_ssn FROM departament) THEN 'Sim' ELSE 'Não' END AS e_gerente
+FROM employee e
+LEFT JOIN dependent d ON e.Ssn = d.Essn;
+
+CREATE USER 'gerente'@'%' IDENTIFIED BY 'senha_gerente';
+CREATE USER 'employee'@'%' IDENTIFIED BY 'senha_employee';
+
+GRANT SELECT ON vw_departamentos_gerentes TO 'gerente'@'%';
+GRANT SELECT ON vw_empregados_por_departamento TO 'gerente'@'%';
+GRANT SELECT ON vw_projetos_departamentos_gerentes TO 'gerente'@'%';
+GRANT SELECT ON vw_projetos_mais_empregados TO 'gerente'@'%';
+GRANT SELECT ON vw_empregados_dependentes_gerentes TO 'gerente'@'%';
+
+GRANT SELECT ON vw_empregados_por_departamento TO 'employee'@'%';
