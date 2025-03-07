@@ -304,8 +304,65 @@ BEGIN
 	END CASE;
 END$$
 
+DELIMITER ;
+
 CALL actions_produto(2, NULL, 'Eletrônico', 'Fone Bluetooth', 150);
 
 CALL actions_produto(2, NULL, 'Móvel', 'Cadeira Gamer', 600);
 
 CALL actions_produto(1, NULL, NULL, NULL, NULL);
+
+SET autocommit = 0;
+
+START TRANSACTION;
+
+INSERT INTO Cliente (Nome, TipoCliente, Endereco) VALUES
+('João Silva', 'FISICA', 'Rua A, 123'),
+('Empresa XYZ', 'JURIDICA', 'Av. Comercial, 456');
+
+UPDATE Cliente 
+SET Endereco = 'Rua Nova, 789' 
+WHERE idCliente = 6;
+
+COMMIT;
+
+
+DELIMITER $$
+
+CREATE PROCEDURE InserirFormaPagamento(
+    IN p_TipoPagamento ENUM('CARTAO', 'PIX', 'BOLETO'),
+    IN p_Detalhe VARCHAR(100),
+    IN p_Pedido_idPedido INT
+)
+BEGIN
+
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION 
+    BEGIN
+        ROLLBACK;
+    END;
+    
+    START TRANSACTION;
+    
+     SAVEPOINT antes_insert;
+    
+    INSERT INTO FormaPagamento (TipoPagamento, Detalhe, Pedido_idPedido)
+    VALUES (p_TipoPagamento, p_Detalhe, p_Pedido_idPedido);
+
+	 SAVEPOINT depois_insert;
+     
+     IF LENGTH(p_Detalhe) < 5 THEN
+        ROLLBACK TO SAVEPOINT antes_insert;
+    END IF;
+
+    COMMIT;
+END $$
+
+DELIMITER ;
+
+CALL InserirFormaPagamento('PIX', 'Pagamento via QR Code', 1);
+CALL InserirFormaPagamento('PIX', 'AB', 1);
+
+SELECT * FROM FormaPagamento;
+
+
+
